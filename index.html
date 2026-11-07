@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Алгоритмын дарааллыг тоглоомоор сурч, MediaPipe гарын хөдөлгөөнөөр удирдаарай.">
+<title>Алгоритмын адал явдал</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1730;--panel:#172a4c;--panel-2:#1d355d;--line:#29436c;--text:#f2f6ff;--muted:#a9bfdf;--blue:#4b88ff;--blue-dark:#315fa7;--green:#57d69a;--red:#ff7c89}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 10% 0%,#1b3156 0,transparent 42%),var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+button,a{font:inherit}
+a{color:inherit;text-decoration:none}
+button{color:inherit;cursor:pointer}
+.page{max-width:1180px;margin:0 auto;padding:16px 18px 24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.robot{font-size:30px}
+h1{font-size:clamp(23px,4vw,34px);line-height:1.15;letter-spacing:.01em;margin:0;font-weight:850}
+.subtitle{margin:3px 0 0;color:var(--muted);font-size:13px}
+.score{white-space:nowrap;background:#253f70;border:1px solid #34517f;border-radius:999px;padding:8px 14px;font-weight:750}
+.shell{border:2px solid #29436c;border-radius:16px;background:rgba(23,42,76,.88);padding:14px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab,.reset,.action,.move{border:0;border-radius:11px;font-weight:750;transition:background .15s,transform .15s}
+.tab{background:var(--blue);padding:8px 13px;font-size:12px}
+.tab:hover,.action:hover{background:#6599ff}
+.tab[aria-selected="true"]{outline:2px solid #ffd45e;outline-offset:1px}
+.reset{background:#304d7d;padding:8px 12px;font-size:12px}
+.reset:hover,.move:not(:disabled):hover{background:#3c5d91}
+.mission{margin:0 0 2px;font-size:18px}
+.mission-copy{margin:12px 0 14px;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.9fr);gap:14px;align-items:start}
+.task{min-width:0}
+.task-prompt{margin:0 0 12px;font-weight:650}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:7px}
+.step{display:flex;align-items:center;gap:7px;min-height:40px}
+.step-label{min-width:0;flex:1;background:#263f6a;border-radius:999px;padding:8px 12px;transition:background .15s;cursor:pointer}
+.step-label.selected{outline:2px solid #ffd45e;outline-offset:1px}
+.step-index{color:#d5e5ff}
+.move{width:34px;height:34px;background:#304d7d;font-size:15px;line-height:1}
+.move:disabled{opacity:.42;cursor:not-allowed}
+.actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:12px}
+.action{background:var(--blue);padding:9px 13px;font-size:12px}
+.status{min-height:42px;margin:12px 0 0;padding:10px 12px;border-radius:10px;background:#203b64;color:#c7dcff}
+.status.success{color:#a7f3ca;background:#163e3a}
+.status.error{color:#ffc1c8;background:#482d42}
+.side{display:grid;gap:12px}
+.card{border:1px solid #324d77;border-radius:15px;padding:16px;background:rgba(22,42,76,.65)}
+.card h3{margin:0 0 10px;font-size:15px}
+.card p{margin:0;color:#d4e2f7;font-size:13px}
+.card p+p{margin-top:10px}
+.facts{color:var(--muted)!important}
+.camera-card{padding:16px}
+.camera-help{font-size:11px!important;color:var(--muted)!important;margin-bottom:10px!important}
+.preview{position:relative;width:min(100%,240px);aspect-ratio:4/3;overflow:hidden;border-radius:12px;background:#071020}
+.preview video,.preview canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.preview video[hidden],.preview canvas[hidden]{display:none}
+.camera-placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#7185a6;font-size:12px;text-align:center;padding:12px}
+.camera-placeholder[hidden]{display:none}
+.gesture-guide[hidden]{display:none}
+.gesture-guide{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:8px}
+.gesture-guide-title{grid-column:1/-1;margin:0 0 2px!important;color:#d4e2f7!important;font-size:11px!important;font-weight:750}
+.gesture-cue{display:flex;align-items:center;gap:7px;min-width:0;padding:6px 8px;border:1px solid #324d77;border-radius:9px;background:#102342;font-size:11px;line-height:1.3}
+.gesture-cue strong{display:grid;place-items:center;flex:none;width:24px;height:24px;border-radius:7px;background:#263f6a;color:#ffd45e;font-size:16px}
+.gesture-cue span{color:var(--muted)}
+.camera-actions{display:flex;gap:7px;margin-top:9px}
+.camera-actions button{border:0;border-radius:10px;padding:7px 12px;font-size:12px;font-weight:750}
+.start-camera{background:var(--blue)}
+.stop-camera{background:#304d7d}
+.stop-camera:disabled{opacity:.5;cursor:not-allowed}
+.camera-status{min-height:20px;margin-top:8px!important;font-size:11px!important;color:var(--muted)!important}
+.camera-status.error{color:#ffabb5!important}
+.camera-status.ok{color:#9ce7be!important}
+.footer{margin-top:14px;color:var(--muted);font-size:11px}
+.footer a{color:#c7dcff;text-decoration:underline;text-underline-offset:3px}
+.hand-cursor{position:fixed;z-index:20;left:0;top:0;width:22px;height:22px;border:3px solid white;border-radius:50%;background:#4b88ff99;box-shadow:0 0 0 3px #4b88ff66;pointer-events:none;transform:translate(-50%,-50%);display:none}
+.hand-cursor.pinching{background:#57d69a99;box-shadow:0 0 0 5px #57d69a55;transform:translate(-50%,-50%) scale(.8)}
+.maze-game[hidden],#orderGame[hidden]{display:none}
+.maze-picker{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.maze-picker button,.maze-controls button,.maze-program button{border:0;border-radius:9px;padding:8px 11px;background:#304d7d;color:var(--text);font-weight:700}
+.maze-picker button[aria-pressed="true"]{background:var(--blue);outline:2px solid #ffd45e;outline-offset:1px}
+.maze-board{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;width:min(100%,440px);aspect-ratio:1;margin:0 auto 12px}
+.maze-cell{display:grid;place-items:center;min-width:0;border-radius:8px;background:#e8edf4;color:#68418a;font-size:clamp(16px,4vw,27px)}
+.maze-cell.path{background:#d5f2df}
+.maze-cell.robot{background:#9be2bd}
+.maze-cell.robot span{display:inline-block;transition:transform .15s}
+.maze-cell.target{background:#ffe5a1}
+.maze-cell.crash{background:#ff8992}
+.maze-info{min-height:22px;margin:0 0 10px;color:var(--muted);font-size:12px;text-align:center}
+.maze-program{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:42px;padding:8px;border:1px solid var(--line);border-radius:10px;background:#102342}
+.maze-program-label{width:100%;font-size:12px;color:var(--muted)}
+.maze-command{padding:4px 8px;border-radius:7px;background:#263f6a;font-size:12px}
+.maze-controls{display:flex;justify-content:center;gap:7px;flex-wrap:wrap;margin-top:10px}
+.maze-controls .run-program{background:#17805d}
+.maze-controls button:disabled{opacity:.5;cursor:not-allowed}
+.maze-hint{margin:10px 0 0;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.camera-card{grid-column:span 2}.preview{width:min(100%,280px)}}
+@media(max-width:520px){.page{padding:12px 10px 18px}.shell{padding:10px}.topbar{align-items:flex-start}.robot{font-size:25px}.score{font-size:12px;padding:7px 10px}.side{grid-template-columns:1fr}.camera-card{grid-column:auto}.preview{width:100%;max-width:300px}.tab{padding:8px 10px}.step-label{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <div class="brand">
+      <span class="robot" aria-hidden="true">🤖</span>
+      <div>
+        <h1>АЛГОРИТМЫН АДАЛ ЯВДАЛ</h1>
+        <p class="subtitle">8-р анги · Шугаман ба салаалсан алгоритм · Туршилтын хувилбар</p>
+      </div>
+    </div>
+    <div class="score" aria-live="polite">⭐ Оноо: <span id="score">0</span></div>
+  </header>
+
+  <main class="shell">
+    <div class="toolbar">
+      <div class="tabs" role="tablist" aria-label="Тоглоомын түвшин">
+        <button class="tab" type="button" role="tab" data-level="0" aria-selected="true">1. Дараалал</button>
+        <button class="tab" type="button" role="tab" data-level="1" aria-selected="false">2. Шугаман</button>
+        <button class="tab" type="button" role="tab" data-level="2" aria-selected="false">3. Салаалсан</button>
+        <button class="tab" type="button" role="tab" data-level="3" aria-selected="false">4. Сорил</button>
+      </div>
+      <button class="reset" id="reset" type="button">↻ Шинээр эхлэх</button>
+    </div>
+
+    <section aria-labelledby="missionTitle">
+      <h2 class="mission" id="missionTitle">LEVEL 1 — Роботыг сэрээ</h2>
+      <p class="mission-copy" id="missionCopy"></p>
+      <div class="layout">
+        <div class="task">
+          <p class="task-prompt" id="prompt"></p>
+          <div id="orderGame">
+            <ol class="steps" id="steps" aria-label="Алгоритмын алхмууд"></ol>
+            <div class="actions">
+              <button class="action" id="check" type="button">✓ Дарааллыг шалгах</button>
+            </div>
+          </div>
+          <section class="maze-game" id="mazeGame" hidden aria-label="Роботын замын тоглоом">
+            <div class="maze-picker" id="mazePicker" aria-label="Замын даалгавар"></div>
+            <div class="maze-board" id="mazeBoard" role="grid" aria-label="5-аас 5 нүдтэй роботын зам"></div>
+            <p class="maze-info" id="mazeInfo" aria-live="polite"></p>
+            <div class="maze-program" id="mazeProgram" aria-label="Алгоритмын командууд"></div>
+            <div class="maze-controls">
+              <button type="button" data-command="forward">⬆ Урагш</button>
+              <button type="button" data-command="right">↻ Баруун эргэх</button>
+              <button type="button" data-command="left">↺ Зүүн эргэх</button>
+              <button class="run-program" type="button" id="runMaze">▶ Ажиллуулах</button>
+              <button type="button" id="undoMaze">↶ Буцаах</button>
+              <button type="button" id="clearMaze">Цэвэрлэх</button>
+            </div>
+            <p class="maze-hint">Гарын дохио: дээш заах — урагш; баруун/зүүн заах — эргэх; алгаа нээх — алгоритм ажиллуулах. Команд бүрийн өмнө гараа атгаж дахин идэвхжүүлнэ.</p>
+          </section>
+          <p class="status" id="gameStatus" role="status" aria-live="polite"></p>
+        </div>
+
+        <aside class="side">
+          <section class="card">
+            <h3>📚 Мэдлэгийн булан</h3>
+            <p id="lesson"></p>
+            <p class="facts" id="lessonTip"></p>
+          </section>
+          <section class="card camera-card">
+            <h3>📷 Гар удирдлага (сонголтоор)</h3>
+            <p class="camera-help" id="cameraHelp">Эхлээд гараа атгаж удирдлагыг идэвхжүүлээд нэг дохио өгнө. Дараагийн дохио бүрийн өмнө гараа атгана. Чимхэж товших болон mouse бас ажиллана.</p>
+            <div class="preview">
+              <video id="webcam" autoplay playsinline muted hidden></video>
+              <canvas id="handCanvas" hidden aria-hidden="true"></canvas>
+              <div class="camera-placeholder" id="cameraPlaceholder">Камер эхлээгүй байна</div>
+            </div>
+            <div class="gesture-guide" id="mazeGestureGuide" hidden aria-label="Эхний даалгаврын гарын дохионы санамж">
+              <p class="gesture-guide-title">Эхний даалгавар · Камерын дэлгэцтэй ижил чиглэл</p>
+              <div class="gesture-cue"><strong>✊</strong><span>Гараа атга<br>Дохио идэвхжүүл</span></div>
+              <div class="gesture-cue"><strong>↑</strong><span>Дээш заа<br>Урагш яв</span></div>
+              <div class="gesture-cue"><strong>→</strong><span>Баруун заа<br>Баруун эргэ</span></div>
+              <div class="gesture-cue"><strong>←</strong><span>Зүүн заа<br>Зүүн эргэ</span></div>
+              <div class="gesture-cue"><strong>✋</strong><span>Алгаа нээ<br>Алгоритм ажиллуул</span></div>
+            </div>
+            <div class="camera-actions">
+              <button class="start-camera" id="startCamera" type="button">Камер асаах</button>
+              <button class="stop-camera" id="stopCamera" type="button" disabled>Унтраах</button>
+            </div>
+            <p class="camera-status" id="cameraStatus" role="status" aria-live="polite">Гарын удирдлага ажиллахын тулд камерын зөвшөөрөл өгнө үү.</p>
+          </section>
+        </aside>
+      </div>
+    </section>
+  </main>
+  <p class="footer">Камер ашиглахад HTTPS эсвэл localhost шаардлагатай.</p>
+</div>
+<div class="hand-cursor" id="handCursor" aria-hidden="true"></div>
+
+<script type="module">
+const levels = [
+  {
+    title: "LEVEL 1 — Роботыг сэрээ",
+    copy: "Эхлээд цэнэглэгчийг холбоод, цэнэгийг шалгаж, дараа нь роботыг асаа.",
+    prompt: "Доорх үйлдлүүдийг зөв дараалалд байрлуулаарай. Дарааллын сумнуудаар шилжүүлнэ.",
+    lesson: "Алгоритм гэдэг нь тодорхой зорилгод хүрэхийн тулд гүйцэтгэх ойлгомжтой, дараалсан алхмууд юм.",
+    tip: "Алхмуудын дараалал өөрчлөгдвөл үр дүн өөр болж болно.",
+    correct: ["connect", "check", "start"],
+    steps: [
+      {id:"start", text:"Роботыг асаах"},
+      {id:"connect", text:"Цэнэглэгчийг холбох"},
+      {id:"check", text:"Цэнэгийг шалгах"}
+    ]
+  },
+  {
+    title: "LEVEL 2 — Роботын зам",
+    copy: "Зурагт байгаа таван замаар алгоритм зохиож роботыг одонд хүргээрэй.",
+    prompt: "Цай бэлтгэх шугаман алгоритмын алхмуудыг эрэмбэлээрэй.",
+    lesson: "Шугаман алгоритмд командууд нэг нэгээрээ, сонголтгүйгээр дараалан биелдэг.",
+    tip: "Эхлэхээсээ өмнө алхам бүр өмнөх алхмаасаа хамаарах эсэхийг бодоорой.",
+    correct: ["cup", "tea", "boil", "pour"],
+    steps: [
+      {id:"pour", text:"Халуун усыг аяганд хийх"},
+      {id:"tea", text:"Цайны уутыг аяганд хийх"},
+      {id:"cup", text:"Цэвэр аяга бэлдэх"},
+      {id:"boil", text:"Ус буцалгах"}
+    ]
+  },
+  {
+    title: "LEVEL 3 — Цаг агаараа шалга",
+    copy: "Гадагш гарахын өмнө цаг агаараа шалгаад тохирох үйлдлийг сонго.",
+    prompt: "Нөхцөл ба салааллыг ашигласан алхмуудыг зөв эрэмбэлээрэй.",
+    lesson: "Салаалсан алгоритм нөхцөлийг шалгаад, үнэн эсвэл худал үр дүнгээс хамаарч өөр зам сонгодог.",
+    tip: "“Хэрэв бороотой бол шүхэр ав, үгүй бол малгай өмс” гэдэг нь салааллын жишээ.",
+    correct: ["weather", "rain", "else", "go"],
+    steps: [
+      {id:"go", text:"Гадагш гарах"},
+      {id:"rain", text:"Хэрэв бороотой бол шүхэр авах"},
+      {id:"weather", text:"Цаг агаарыг шалгах"},
+      {id:"else", text:"Үгүй бол малгай өмсөх"}
+    ]
+  },
+  {
+    title: "LEVEL 4 — Аюулгүй гар угаах",
+    copy: "Сүүлийн сорил! Гараа зөв угаах алхмуудыг эхнээс нь эрэмбэл.",
+    prompt: "Бүх алхмыг зөв дараалалд оруулж алгоритмын мэдлэгээ батлаарай.",
+    lesson: "Зөв алгоритм нь эхлэл, тодорхой алхам, төгсгөлтэй бөгөөд бодит зорилгод хүргэдэг.",
+    tip: "Алхам бүрийг нэг удаа шалгаарай. Амжилт хүсье! ⭐",
+    correct: ["wet", "soap", "rub", "rinse", "dry"],
+    steps: [
+      {id:"rinse", text:"Гараа усаар зайлах"},
+      {id:"wet", text:"Гараа норгох"},
+      {id:"dry", text:"Цэвэр алчуураар арчих"},
+      {id:"rub", text:"Алгаа 20 секунд үрэх"},
+      {id:"soap", text:"Саван түрхэх"}
+    ]
+  }
+];
+
+const mazeLevels = [
+  {
+    title: "Даалгавар 01 — Эхний алхам",
+    points: 10,
+    route: [20, 21, 16, 11, 12, 13, 8]
+  },
+  {
+    title: "Даалгавар 02 — Урт зам",
+    points: 15,
+    route: [24, 19, 14, 13, 12, 7, 2]
+  },
+  {
+    title: "Даалгавар 03 — Чиглэлээ өөрчилье",
+    points: 20,
+    route: [20, 21, 16, 11, 12, 13, 8, 3]
+  },
+  {
+    title: "Даалгавар 04 — Нарийн зам",
+    points: 25,
+    route: [15, 16, 17, 12, 7, 8, 9, 4]
+  },
+  {
+    title: "Даалгавар 05 — Алгоритмын мастер",
+    points: 30,
+    route: [21, 16, 17, 12, 13, 8, 9, 4]
+  }
+];
+
+const $ = selector => document.querySelector(selector);
+let currentLevel = 0;
+let score = 0;
+let completed = new Set();
+let completedMazes = new Set();
+let currentSteps = [];
+let selectedStepIndex = 0;
+let currentMaze = 0;
+let mazePosition = 0;
+let mazeDirection = 0;
+let mazeCommands = [];
+let mazeRunning = false;
+let mazeWon = false;
+const stepList = $("#steps");
+const gameStatus = $("#gameStatus");
+const orderGame = $("#orderGame");
+const mazeGame = $("#mazeGame");
+const mazePicker = $("#mazePicker");
+const mazeBoard = $("#mazeBoard");
+const mazeProgram = $("#mazeProgram");
+const mazeInfo = $("#mazeInfo");
+const cameraHelp = $("#cameraHelp");
+const mazeGestureGuide = $("#mazeGestureGuide");
+
+function renderLevel(index) {
+  currentLevel = index;
+  const level = levels[index];
+  currentSteps = level.steps.map(step => ({...step}));
+  selectedStepIndex = 0;
+  const isMazeLevel = index === 1;
+  orderGame.hidden = isMazeLevel;
+  mazeGame.hidden = !isMazeLevel;
+  mazeGestureGuide.hidden = !isMazeLevel;
+  $("#missionTitle").textContent = level.title;
+  $("#missionCopy").textContent = level.copy;
+  $("#prompt").textContent = isMazeLevel
+    ? "Роботын замд таарах командын алгоритм зохиогоод алгаа нээж ажиллуулаарай."
+    : level.prompt;
+  $("#lesson").textContent = isMazeLevel
+    ? "Алгоритм нь командуудын дараалал. Урагшлах, баруун/зүүн эргэх командуудыг зөв дараалж роботыг одонд хүргэнэ."
+    : level.lesson;
+  $("#lessonTip").textContent = isMazeLevel
+    ? "Замаас гарахгүйгээр чиглэлээ тооцоолж, алдаа гарвал дахин эхлүүлээрэй."
+    : level.tip;
+  cameraHelp.textContent = isMazeLevel
+    ? "Эхлээд гараа атгаж идэвхжүүлнэ. Дээш заах — урагшлах; баруун/зүүн заах — эргэх; алгаа нээх — алгоритм ажиллуулах. Команд бүрийн дараа дахин атгана."
+    : "Эхлээд гараа атгаж идэвхжүүлнэ. Дээш заах — алхам зөөх; баруун/зүүн заах — түвшин солих; алгаа нээх — шалгах. Дохио бүрийн дараа дахин атгана.";
+  document.querySelectorAll(".tab").forEach((tab, tabIndex) => {
+    tab.setAttribute("aria-selected", String(tabIndex === index));
+  });
+  gameStatus.className = "status";
+  gameStatus.textContent = "Бэлэн! Даалгавраа гүйцэтгээрэй.";
+  renderSteps();
+  if (isMazeLevel) renderMazeLevel(0);
+}
+
+function renderSteps() {
+  stepList.replaceChildren();
+  currentSteps.forEach((step, index) => {
+    const item = document.createElement("li");
+    item.className = "step";
+    const label = document.createElement("span");
+    label.className = "step-label";
+    label.innerHTML = `<span class="step-index">${index + 1}.</span> ${step.text}`;
+    label.classList.toggle("selected", index === selectedStepIndex);
+    label.addEventListener("click", () => {
+      selectedStepIndex = index;
+      renderSteps();
+    });
+    const up = document.createElement("button");
+    up.type = "button";
+    up.className = "move";
+    up.textContent = "↑";
+    up.setAttribute("aria-label", `${step.text} алхмыг дээш зөөх`);
+    up.disabled = index === 0;
+    up.addEventListener("click", () => {
+      selectedStepIndex = index;
+      moveStep(index, -1);
+    });
+    const down = document.createElement("button");
+    down.type = "button";
+    down.className = "move";
+    down.textContent = "↓";
+    down.setAttribute("aria-label", `${step.text} алхмыг доош зөөх`);
+    down.disabled = index === currentSteps.length - 1;
+    down.addEventListener("click", () => {
+      selectedStepIndex = index;
+      moveStep(index, 1);
+    });
+    item.append(label, up, down);
+    stepList.append(item);
+  });
+}
+
+function moveStep(index, offset) {
+  const target = index + offset;
+  if (target < 0 || target >= currentSteps.length) return false;
+  [currentSteps[index], currentSteps[target]] = [currentSteps[target], currentSteps[index]];
+  selectedStepIndex = target;
+  renderSteps();
+  return true;
+}
+
+function checkOrder() {
+  const correct = levels[currentLevel].correct;
+  const matches = currentSteps.every((step, index) => step.id === correct[index]);
+  gameStatus.className = matches ? "status success" : "status error";
+  if (!matches) {
+    gameStatus.textContent = "Дараалал буруу байна. Дахин нягтлаад үзээрэй.";
+    return;
+  }
+  if (!completed.has(currentLevel)) {
+    completed.add(currentLevel);
+    score += 10;
+    $("#score").textContent = score;
+  }
+  gameStatus.textContent = completed.size === levels.length
+    ? "🎉 Баяр хүргэе! Бүх даалгаврыг амжилттай дуусгалаа."
+    : "🎉 Зөв дараалал! Даалгавар амжилттай.";
+}
+
+function renderMazeLevel(index) {
+  currentMaze = index;
+  mazePosition = mazeLevels[index].route[0];
+  mazeDirection = 0;
+  mazeCommands = [];
+  mazeWon = false;
+  mazeGestureGuide.hidden = index !== 0;
+  mazeInfo.textContent = `${mazeLevels[index].title} · ⭐ ${mazeLevels[index].points} оноо`;
+  mazePicker.replaceChildren();
+  mazeLevels.forEach((maze, mazeIndex) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `${mazeIndex + 1}`;
+    button.setAttribute("aria-label", maze.title);
+    button.setAttribute("aria-pressed", String(mazeIndex === index));
+    button.disabled = mazeRunning;
+    button.addEventListener("click", () => renderMazeLevel(mazeIndex));
+    mazePicker.append(button);
+  });
+  renderMazeBoard();
+  renderMazeProgram();
+}
+
+function renderMazeBoard(blockedCell = -1) {
+  const route = new Set(mazeLevels[currentMaze].route);
+  mazeBoard.replaceChildren();
+  for (let cellIndex = 0; cellIndex < 25; cellIndex++) {
+    const cell = document.createElement("div");
+    cell.className = "maze-cell";
+    cell.setAttribute("role", "gridcell");
+    cell.setAttribute(
+      "aria-label",
+      `${Math.floor(cellIndex / 5) + 1}-р мөр, ${cellIndex % 5 + 1}-р багана`
+    );
+    if (route.has(cellIndex)) cell.classList.add("path");
+    if (cellIndex === blockedCell) cell.classList.add("crash");
+    if (cellIndex === mazePosition) {
+      cell.classList.add("robot");
+      const robot = document.createElement("span");
+      robot.textContent = "🤖";
+      robot.style.transform = `rotate(${mazeDirection * 90}deg)`;
+      cell.append(robot);
+    } else if (cellIndex === mazeLevels[currentMaze].route.at(-1)) {
+      cell.classList.add("target");
+      cell.textContent = "⭐";
+    } else if (route.has(cellIndex)) {
+      cell.textContent = "▪";
+    } else {
+      cell.textContent = "▫";
+    }
+    mazeBoard.append(cell);
+  }
+}
+
+function renderMazeProgram() {
+  mazeProgram.replaceChildren();
+  const label = document.createElement("span");
+  label.className = "maze-program-label";
+  label.textContent = "Командын дараалал";
+  mazeProgram.append(label);
+  if (!mazeCommands.length) {
+    const empty = document.createElement("span");
+    empty.className = "maze-command";
+    empty.textContent = "Одоогоор команд алга";
+    mazeProgram.append(empty);
+  } else {
+    mazeCommands.forEach((command, index) => {
+      const chip = document.createElement("span");
+      chip.className = "maze-command";
+      chip.textContent = `${index + 1}. ${mazeCommandLabels[command]}`;
+      mazeProgram.append(chip);
+    });
+  }
+  document.querySelectorAll(".maze-controls button").forEach(button => {
+    button.disabled = mazeRunning || (mazeWon && button.hasAttribute("data-command"));
+  });
+}
+
+const mazeCommandLabels = {
+  forward: "⬆ Урагш",
+  right: "↻ Баруун",
+  left: "↺ Зүүн"
+};
+const mazeDirections = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+
+function addMazeCommand(command) {
+  if (mazeRunning || mazeWon || mazeCommands.length >= 30) return;
+  mazeCommands.push(command);
+  renderMazeProgram();
+}
+
+async function runMazeProgram() {
+  if (mazeRunning) return;
+  if (!mazeCommands.length) {
+    gameStatus.className = "status error";
+    gameStatus.textContent = "Алгоритм ажиллуулахын өмнө команд оруулна уу.";
+    return;
+  }
+  if (mazeWon) {
+    gameStatus.className = "status";
+    gameStatus.textContent = "Энэ даалгавар аль хэдийн дууссан. Өөр зам сонгох эсвэл дахин эхлүүлнэ үү.";
+    return;
+  }
+
+  mazeRunning = true;
+  renderMazeLevelControls();
+  gameStatus.className = "status";
+  gameStatus.textContent = "Алгоритм ажиллаж байна...";
+  for (const command of mazeCommands) {
+    await new Promise(resolve => setTimeout(resolve, 350));
+    if (command === "right") {
+      mazeDirection = (mazeDirection + 1) % 4;
+    } else if (command === "left") {
+      mazeDirection = (mazeDirection + 3) % 4;
+    } else {
+      const [rowDelta, colDelta] = mazeDirections[mazeDirection];
+      const row = Math.floor(mazePosition / 5) + rowDelta;
+      const col = mazePosition % 5 + colDelta;
+      const nextCell = row * 5 + col;
+      if (row < 0 || row >= 5 || col < 0 || col >= 5 || !mazeLevels[currentMaze].route.includes(nextCell)) {
+        renderMazeBoard(nextCell);
+        mazeRunning = false;
+        renderMazeLevelControls();
+        gameStatus.className = "status error";
+        gameStatus.textContent = "Робот замаас гарлаа. Алгоритмаа цэвэрлээд дахин оролдоорой.";
+        return;
+      }
+      mazePosition = nextCell;
+    }
+    renderMazeBoard();
+    if (mazePosition === mazeLevels[currentMaze].route.at(-1)) {
+      mazeWon = true;
+      if (!completedMazes.has(currentMaze)) {
+        completedMazes.add(currentMaze);
+        score += mazeLevels[currentMaze].points;
+        $("#score").textContent = score;
+      }
+      break;
+    }
+  }
+  mazeRunning = false;
+  renderMazeLevelControls();
+  if (mazeWon) {
+    gameStatus.className = "status success";
+    gameStatus.textContent = `🎉 Зорилгод хүрлээ! ${mazeLevels[currentMaze].points} оноо авлаа.`;
+  } else {
+    gameStatus.className = "status";
+    gameStatus.textContent = "Алгоритм дууслаа. Робот одонд хүрсэнгүй. Командаа үргэлжлүүлж нэмээд ажиллуулаарай.";
+  }
+}
+
+function renderMazeLevelControls() {
+  mazePicker.querySelectorAll("button").forEach((button, index) => {
+    button.disabled = mazeRunning;
+    button.setAttribute("aria-pressed", String(index === currentMaze));
+  });
+  document.querySelectorAll(".tab").forEach(button => {
+    button.disabled = mazeRunning;
+  });
+  $("#reset").disabled = mazeRunning;
+  document.querySelectorAll(".maze-controls [data-command]").forEach(button => {
+    button.disabled = mazeRunning || mazeWon;
+  });
+  $("#runMaze").disabled = mazeRunning || mazeWon || !mazeCommands.length;
+  $("#undoMaze").disabled = mazeRunning || !mazeCommands.length;
+  $("#clearMaze").disabled = mazeRunning || (!mazeCommands.length && !mazeWon);
+  renderMazeProgram();
+}
+
+function resetMazeProgram() {
+  if (mazeRunning) return;
+  mazeCommands = [];
+  mazePosition = mazeLevels[currentMaze].route[0];
+  mazeDirection = 0;
+  mazeWon = false;
+  renderMazeBoard();
+  renderMazeProgram();
+  gameStatus.className = "status";
+  gameStatus.textContent = "Эхлэлд буцлаа. Шинэ алгоритм зохиогоорой.";
+}
+
+function handleKeyboardShortcuts(event) {
+  const targetTag = document.activeElement?.tagName?.toLowerCase();
+  const isFormField = targetTag === "input" || targetTag === "textarea" || targetTag === "select";
+  const key = event.key.toLowerCase();
+  if (isFormField && key !== "escape") return;
+
+  if (currentLevel === 1) {
+    if (event.key === "ArrowUp" || key === "w") {
+      event.preventDefault();
+      if (!mazeRunning) addMazeCommand("forward");
+      return;
+    }
+    if (event.key === "ArrowRight" || key === "d") {
+      event.preventDefault();
+      if (!mazeRunning) addMazeCommand("right");
+      return;
+    }
+    if (event.key === "ArrowLeft" || key === "a") {
+      event.preventDefault();
+      if (!mazeRunning) addMazeCommand("left");
+      return;
+    }
+    if (key === "enter" || key === " ") {
+      event.preventDefault();
+      if (!mazeRunning) runMazeProgram();
+      return;
+    }
+    if (key === "backspace" || key === "delete") {
+      event.preventDefault();
+      if (!mazeRunning) {
+        mazeCommands.pop();
+        renderMazeProgram();
+      }
+      return;
+    }
+    if (key === "escape") {
+      event.preventDefault();
+      resetMazeProgram();
+      return;
+    }
+    return;
+  }
+
+  if (event.key === "ArrowUp") {
+    event.preventDefault();
+    moveStep(selectedStepIndex, -1);
+    return;
+  }
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    moveStep(selectedStepIndex, 1);
+    return;
+  }
+  if (event.key === "ArrowRight") {
+    event.preventDefault();
+    if (currentLevel < levels.length - 1) renderLevel(currentLevel + 1);
+    return;
+  }
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    if (currentLevel > 0) renderLevel(currentLevel - 1);
+    return;
+  }
+  if (key === "enter" || key === " ") {
+    event.preventDefault();
+    checkOrder();
+    return;
+  }
+  if (key === "r") {
+    event.preventDefault();
+    score = 0;
+    completed = new Set();
+    completedMazes = new Set();
+    $("#score").textContent = score;
+    renderLevel(currentLevel);
+  }
+}
+
+document.addEventListener("keydown", handleKeyboardShortcuts);
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => renderLevel(Number(tab.dataset.level)));
+});
+$("#check").addEventListener("click", checkOrder);
+document.querySelectorAll(".maze-controls [data-command]").forEach(button => {
+  button.addEventListener("click", () => addMazeCommand(button.dataset.command));
+});
+$("#runMaze").addEventListener("click", runMazeProgram);
+$("#undoMaze").addEventListener("click", () => {
+  if (mazeRunning) return;
+  mazeCommands.pop();
+  renderMazeProgram();
+});
+$("#clearMaze").addEventListener("click", resetMazeProgram);
+$("#reset").addEventListener("click", () => {
+  score = 0;
+  completed = new Set();
+  completedMazes = new Set();
+  $("#score").textContent = score;
+  renderLevel(0);
+});
+
+const webcam = $("#webcam");
+const canvas = $("#handCanvas");
+const canvasContext = canvas.getContext("2d");
+const cameraStatus = $("#cameraStatus");
+const cameraPlaceholder = $("#cameraPlaceholder");
+const cursor = $("#handCursor");
+const startButton = $("#startCamera");
+const stopButton = $("#stopCamera");
+const mediaPipeVersion = "1.2.0";
+const mediaPipeBaseUrl = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${mediaPipeVersion}`;
+const wasmUrl = `${mediaPipeBaseUrl}/wasm`;
+const modelUrl = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
+const handConnections = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+let stream = null;
+let handLandmarker = null;
+let cameraRunning = false;
+let lastVideoTime = -1;
+let wasPinching = false;
+let lastPinchTime = 0;
+let gestureCandidate = null;
+let gestureCandidateFrames = 0;
+let activeGesture = null;
+let gestureArmed = false;
+
+function setCameraStatus(message, state = "") {
+  cameraStatus.textContent = message;
+  cameraStatus.className = `camera-status ${state}`;
+}
+
+function drawLandmarks(landmarks) {
+  const width = webcam.videoWidth;
+  const height = webcam.videoHeight;
+  if (canvas.width !== width || canvas.height !== height) {
+    canvas.width = width;
+    canvas.height = height;
+  }
+  canvasContext.clearRect(0, 0, width, height);
+  canvasContext.strokeStyle = "#69e0ad";
+  canvasContext.lineWidth = Math.max(2, width / 180);
+  for (const [from, to] of handConnections) {
+    canvasContext.beginPath();
+    canvasContext.moveTo(landmarks[from].x * width, landmarks[from].y * height);
+    canvasContext.lineTo(landmarks[to].x * width, landmarks[to].y * height);
+    canvasContext.stroke();
+  }
+  canvasContext.fillStyle = "#f4d35e";
+  for (const point of landmarks) {
+    canvasContext.beginPath();
+    canvasContext.arc(point.x * width, point.y * height, Math.max(2, width / 100), 0, Math.PI * 2);
+    canvasContext.fill();
+  }
+}
+
+function handleHand(landmarks) {
+  const tip = landmarks[8];
+  const thumb = landmarks[4];
+  const wrist = landmarks[0];
+  const middleBase = landmarks[9];
+  const handSize = Math.hypot(wrist.x - middleBase.x, wrist.y - middleBase.y);
+  const pinchDistance = Math.hypot(tip.x - thumb.x, tip.y - thumb.y);
+  const isPinching = handSize > 0 && pinchDistance / handSize < 0.32;
+  const x = (1 - tip.x) * window.innerWidth;
+  const y = tip.y * window.innerHeight;
+  cursor.style.display = "block";
+  cursor.style.left = `${x}px`;
+  cursor.style.top = `${y}px`;
+  cursor.classList.toggle("pinching", isPinching);
+  const hoveredStep = document.elementFromPoint(x, y)?.closest(".step-label");
+  if (hoveredStep instanceof HTMLElement) {
+    const stepIndex = Array.from(stepList.children).findIndex(item => item.contains(hoveredStep));
+    if (stepIndex !== -1 && stepIndex !== selectedStepIndex) {
+      stepList.querySelector(".step-label.selected")?.classList.remove("selected");
+      selectedStepIndex = stepIndex;
+      hoveredStep.classList.add("selected");
+    }
+  }
+  if (isPinching && !wasPinching && performance.now() - lastPinchTime > 450) {
+    const target = document.elementFromPoint(x, y)?.closest("button, a, [role='button']");
+    if (target instanceof HTMLElement) {
+      target.click();
+      lastPinchTime = performance.now();
+    }
+  }
+  wasPinching = isPinching;
+  return isPinching;
+}
+
+function classifyGesture(landmarks) {
+  const handSize = Math.hypot(
+    landmarks[0].x - landmarks[9].x,
+    landmarks[0].y - landmarks[9].y
+  );
+  if (!handSize) return null;
+
+  const isFingerExtended = (tip, base) =>
+    Math.hypot(landmarks[tip].x - landmarks[base].x, landmarks[tip].y - landmarks[base].y) >
+    handSize * 0.85;
+  const indexExtended = isFingerExtended(8, 5);
+  const middleExtended = isFingerExtended(12, 9);
+  const ringExtended = isFingerExtended(16, 13);
+  const pinkyExtended = isFingerExtended(20, 17);
+  const thumbTucked = Math.hypot(
+    landmarks[4].x - landmarks[9].x,
+    landmarks[4].y - landmarks[9].y
+  ) / handSize < 0.9;
+  const thumbOpen = Math.hypot(
+    landmarks[4].x - landmarks[5].x,
+    landmarks[4].y - landmarks[5].y
+  ) / handSize > 0.65;
+
+  if (indexExtended && middleExtended && ringExtended && pinkyExtended && thumbOpen) {
+    return "open";
+  }
+  if (!indexExtended && !middleExtended && !ringExtended && !pinkyExtended && thumbTucked) {
+    return "fist";
+  }
+  if (!indexExtended || middleExtended || ringExtended || pinkyExtended) return null;
+
+  const dx = (landmarks[5].x - landmarks[8].x) / handSize;
+  const dy = (landmarks[5].y - landmarks[8].y) / handSize;
+  if (dy > 0.55 && dy > Math.abs(dx) * 1.2) return "up";
+  if (dx > 0.55 && dx > Math.abs(dy) * 1.2) return "right";
+  if (dx < -0.55 && -dx > Math.abs(dy) * 1.2) return "left";
+  return null;
+}
+
+function applyGesture(gesture) {
+  if (currentLevel === 1) {
+    if (gesture === "up") {
+      addMazeCommand("forward");
+      setCameraStatus("Дээш дохио · Урагшлах команд нэмлээ.", "ok");
+    } else if (gesture === "right") {
+      addMazeCommand("right");
+      setCameraStatus("Баруун дохио · Баруун эргэх команд нэмлээ.", "ok");
+    } else if (gesture === "left") {
+      addMazeCommand("left");
+      setCameraStatus("Зүүн дохио · Зүүн эргэх команд нэмлээ.", "ok");
+    } else if (gesture === "open") {
+      setCameraStatus("Алгаа нээлээ · Алгоритмыг ажиллуулж байна.", "ok");
+      runMazeProgram();
+    }
+    return;
+  }
+  if (gesture === "up") {
+    const moved = moveStep(selectedStepIndex, -1);
+    setCameraStatus(
+      moved ? "Дээш дохио · Сонгосон алхмыг дээш зөөлөө." : "Дээш зөөх алхам алга.",
+      moved ? "ok" : ""
+    );
+  } else if (gesture === "right") {
+    if (currentLevel < levels.length - 1) {
+      renderLevel(currentLevel + 1);
+      setCameraStatus("Баруун дохио · Дараагийн түвшин.", "ok");
+    } else {
+      setCameraStatus("Та сүүлийн түвшинд байна.");
+    }
+  } else if (gesture === "left") {
+    if (currentLevel > 0) {
+      renderLevel(currentLevel - 1);
+      setCameraStatus("Зүүн дохио · Өмнөх түвшин.", "ok");
+    } else {
+      setCameraStatus("Та эхний түвшинд байна.");
+    }
+  } else if (gesture === "open") {
+    checkOrder();
+    setCameraStatus("Алгаа нээлээ · Алгоритмын дарааллыг шалгалаа.", "ok");
+  }
+}
+
+function updateGesture(gesture) {
+  if (!gesture) {
+    gestureCandidate = null;
+    gestureCandidateFrames = 0;
+    return;
+  }
+  if (gesture === gestureCandidate) {
+    gestureCandidateFrames++;
+  } else {
+    gestureCandidate = gesture;
+    gestureCandidateFrames = 1;
+  }
+  if (gestureCandidateFrames < 3) return;
+  if (gesture === "fist") {
+    if (!gestureArmed) {
+      gestureArmed = true;
+      activeGesture = null;
+      setCameraStatus("Гараа атгаж идэвхжүүллээ · Одоо нэг дохио өгнө үү.", "ok");
+    }
+    return;
+  }
+  if (!gestureArmed) {
+    if (gesture !== activeGesture) {
+      activeGesture = gesture;
+      setCameraStatus("Дараагийн командын өмнө гараа атгаж дахин идэвхжүүлнэ үү.");
+    }
+    return;
+  }
+  if (gesture !== activeGesture) {
+    activeGesture = gesture;
+    gestureArmed = false;
+    applyGesture(gesture);
+    setCameraStatus("Дохио бүртгэгдлээ · Дараагийн дохионы өмнө гараа атгана уу.", "ok");
+  }
+}
+
+function detectFrame() {
+  if (!cameraRunning) return;
+  if (webcam.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && webcam.currentTime !== lastVideoTime) {
+    lastVideoTime = webcam.currentTime;
+    const result = handLandmarker.detectForVideo(webcam, performance.now());
+    const landmarks = result.landmarks?.[0];
+    if (landmarks) {
+      drawLandmarks(landmarks);
+      const isPinching = handleHand(landmarks);
+      updateGesture(isPinching ? null : classifyGesture(landmarks));
+      if (!isPinching && !gestureCandidate) {
+        setCameraStatus("Гар илэрлээ · Дээш, баруун/зүүн заах эсвэл алгаа нээнэ үү.", "ok");
+      }
+    } else {
+      canvasContext.clearRect(0, 0, canvas.width, canvas.height);
+      cursor.style.display = "none";
+      cursor.classList.remove("pinching");
+      wasPinching = false;
+      updateGesture(null);
+      gestureArmed = false;
+      activeGesture = null;
+      setCameraStatus("Гар илрээгүй байна. Гараа камер руу харуулна уу.");
+    }
+  }
+  requestAnimationFrame(detectFrame);
+}
+
+function stopCamera() {
+  cameraRunning = false;
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+  webcam.srcObject = null;
+  webcam.hidden = true;
+  canvas.hidden = true;
+  cameraPlaceholder.hidden = false;
+  cursor.style.display = "none";
+  cursor.classList.remove("pinching");
+  wasPinching = false;
+  updateGesture(null);
+  if (handLandmarker) {
+    handLandmarker.close();
+    handLandmarker = null;
+  }
+  startButton.disabled = false;
+  stopButton.disabled = true;
+}
+
+startButton.addEventListener("click", async () => {
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+    setCameraStatus("Камер ашиглахын тулд HTTPS эсвэл localhost хаягаар нээнэ үү.", "error");
+    return;
+  }
+  startButton.disabled = true;
+  setCameraStatus("Камер болон MediaPipe загварыг ачаалж байна...");
+  let startupStage = "camera";
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {facingMode:"user", width:{ideal:640}, height:{ideal:480}},
+      audio: false
+    });
+    webcam.srcObject = stream;
+    await webcam.play();
+    startupStage = "mediapipe-library";
+    const {FilesetResolver, HandLandmarker} = await import(`${mediaPipeBaseUrl}/vision_bundle.mjs`);
+    startupStage = "mediapipe-wasm";
+    const vision = await FilesetResolver.forVisionTasks(wasmUrl);
+    startupStage = "hand-model";
+    const options = {
+      baseOptions: {modelAssetPath:modelUrl, delegate:"GPU"},
+      runningMode:"VIDEO",
+      numHands:1,
+      minHandDetectionConfidence:0.6,
+      minHandPresenceConfidence:0.6,
+      minTrackingConfidence:0.6
+    };
+    try {
+      handLandmarker = await HandLandmarker.createFromOptions(vision, options);
+    } catch (gpuError) {
+      console.warn("GPU delegate unavailable; retrying with CPU:", gpuError);
+      handLandmarker = await HandLandmarker.createFromOptions(vision, {
+        ...options,
+        baseOptions: {...options.baseOptions, delegate:"CPU"}
+      });
+    }
+    webcam.hidden = false;
+    canvas.hidden = false;
+    cameraPlaceholder.hidden = true;
+    stopButton.disabled = false;
+    cameraRunning = true;
+    lastVideoTime = -1;
+    setCameraStatus("Эхлээд гараа атгаж удирдлагыг идэвхжүүлнэ үү.");
+    requestAnimationFrame(detectFrame);
+  } catch (error) {
+    console.error("Гарын удирдлагыг эхлүүлэхэд алдаа гарлаа:", error);
+    stopCamera();
+    const message = error.name === "NotAllowedError"
+      ? "Камерын зөвшөөрөл олгогдсонгүй. Browser-ийн тохиргооноос зөвшөөрөөд дахин оролдоно уу."
+      : error.name === "NotFoundError"
+        ? "Камер олдсонгүй. Камераа холбоод дахин оролдоно уу."
+        : startupStage === "mediapipe-library"
+          ? `MediaPipe санг татаж чадсангүй (${error.message}). Интернэт холболтоо шалгана уу.`
+          : startupStage === "mediapipe-wasm"
+            ? `MediaPipe WASM файлыг ачаалж чадсангүй (${error.message}). Интернэт эсвэл browser-ийн WebAssembly тохиргоог шалгана уу.`
+            : startupStage === "hand-model"
+              ? `Гар таних загварыг эхлүүлж чадсангүй (${error.message}). Камер болон browser-ийн GPU тохиргоог шалгана уу.`
+              : `Камерыг эхлүүлж чадсангүй (${error.message}). Камерын холболт, зөвшөөрлөө шалгана уу.`;
+    setCameraStatus(message, "error");
+  }
+});
+
+stopButton.addEventListener("click", () => {
+  stopCamera();
+  setCameraStatus("Гарын удирдлага унтарсан.");
+});
+
+renderLevel(0);
+</script>
+</body>
+</html>
