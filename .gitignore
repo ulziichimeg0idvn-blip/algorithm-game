@@ -1,7 +1,0 @@
-﻿# Ignore local editor files
-.DS_Store
-Thumbs.db
-__pycache__/
-*.log
-.vscode/
-.idea/
